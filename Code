@@ -1,0 +1,83 @@
+REPORT ZDEMO_MUSKAN1.
+
+TABLES MARA.
+
+TYPES: BEGIN OF lty_mara,
+       MATNR TYPE MATNR,
+       ERSDA TYPE ERSDA,
+       ERNAM TYPE ERNAM,
+       MTART TYPE MTART,
+       MATKL TYPE MATKL,
+       END OF lty_mara.
+
+DATA: lt_mara TYPE TABLE OF lty_mara,
+      lwa_mara TYPE lty_mara,
+      lt_fieldcat TYPE SLIS_T_FIELDCAT_ALV,
+      ls_fieldcat TYPE SLIS_FIELDCAT_ALV.
+
+SELECT-OPTIONS: s_mara FOR mara-matnr.
+
+SELECT MATNR ERSDA ERNAM MTART MATKL
+FROM MARA
+INTO TABLE lt_mara
+WHERE matnr IN s_mara.
+
+IF lt_mara IS INITIAL.
+MESSAGE 'Data not found' TYPE 'E'.
+ENDIF.
+
+IF sy-subrc = 0.
+ls_fieldcat-col_pos = '1'.
+ls_fieldcat-fieldname = 'MATNR'.
+ls_fieldcat-seltext_l   = 'Material number'.
+ls_fieldcat-tabname   = 'lt_mara'.
+APPEND ls_fieldcat TO lt_fieldcat.
+CLEAR: ls_fieldcat.
+
+ls_fieldcat-col_pos = '2'.
+ls_fieldcat-fieldname = 'ERDSA'.
+ls_fieldcat-seltext_l   = 'Created on'.
+ls_fieldcat-tabname   = 'lt_mara'.
+APPEND ls_fieldcat TO lt_fieldcat.
+CLEAR: ls_fieldcat.
+
+ls_fieldcat-col_pos = '3'.
+ls_fieldcat-fieldname = 'ERNAM'.
+ls_fieldcat-seltext_l   = 'Created By'.
+ls_fieldcat-tabname   = 'lt_mara'.
+APPEND ls_fieldcat TO lt_fieldcat.
+CLEAR: ls_fieldcat.
+
+ls_fieldcat-col_pos = '4'.
+ls_fieldcat-fieldname = 'MTART'.
+ls_fieldcat-seltext_l   = 'Material type'.
+ls_fieldcat-tabname   = 'lt_mara'.
+APPEND ls_fieldcat TO lt_fieldcat.
+CLEAR: ls_fieldcat.
+
+ls_fieldcat-col_pos = '5'.
+ls_fieldcat-fieldname = 'MATKL'.
+ls_fieldcat-seltext_l   = 'Material Group'.
+ls_fieldcat-tabname   = 'lt_mara'.
+APPEND ls_fieldcat TO lt_fieldcat.
+CLEAR: ls_fieldcat.
+ENDIF.
+
+IF sy-subrc <> 0.
+MESSAGE 'ERROR CREATING FIELDCAT' TYPE 'E'.
+ENDIF.
+
+CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+ EXPORTING
+   I_STRUCTURE_NAME                   = 'lty_mara'
+   I_GRID_TITLE                       = 'Material Details'
+   IT_FIELDCAT                        = lt_fieldcat
+  TABLES
+    t_outtab                          = lt_mara
+ EXCEPTIONS
+   PROGRAM_ERROR                     = 1
+   OTHERS                            = 2
+          .
+IF sy-subrc <> 0.
+MESSAGE 'error in displaying' TYPE 'E'.
+ENDIF.
